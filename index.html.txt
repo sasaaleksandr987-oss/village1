@@ -1,0 +1,321 @@
+body {
+  font-family: 'Exo 2', sans-serif;
+  background-color: #1c1917;
+  color: #f5f5f4;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+.font-handwriting {
+  font-family: 'Neucha', cursive;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #292524;
+}
+::-webkit-scrollbar-thumb {
+  background: #78350f;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #92400e;
+}
+
+.game-card {
+  background: rgba(41, 37, 36, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid #78350f;
+  transition: all 0.2s ease;
+}
+
+.game-card:hover {
+  border-color: #f59e0b;
+  transform: translateY(-2px);
+}
+
+.wood-panel {
+  background: linear-gradient(135deg, #451a03 0%, #292524 100%);
+  border: 2px solid #b45309;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+}
+.floating-text {
+  position: absolute;
+  pointer-events: none;
+  font-weight: bold;
+  animation: floatUp 1.2s ease-out forwards;
+  z-index: 50;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+}
+
+.tab-btn.active {
+  background: #b45309;
+  color: #ffffff;
+  border-bottom: 3px solid #f59e0b;
+}
+
+canvas {
+  image-rendering: pixelated;
+}
+
+  <!-- Title & Time -->
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-lg bg-amber-700 flex items-center justify-center text-2xl shadow-inner border border-amber-500">
+      🏡
+    </div>
+    <div>
+      <h1 class="font-bold text-lg sm:text-xl text-amber-400 tracking-wide leading-tight">Возрождение Деревни Pro</h1>
+      <p class="text-xs text-stone-400 flex items-center gap-2">
+        <span>📅 День <span id="game-day" class="text-amber-200 font-bold">1</span></span>
+        <span>•</span>
+        <span id="game-season" class="text-emerald-400 font-semibold">Лето</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Stats Counters -->
+  <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 text-xs sm:text-sm">
+    <div class="bg-stone-900 border border-stone-700 rounded-lg p-2 flex items-center gap-2">
+      <div class="w-7 h-7 rounded bg-emerald-950 text-emerald-400 flex items-center justify-center text-base">💰</div>
+      <div>
+        <div class="text-stone-400 text-[9px] uppercase font-semibold">Баланс</div>
+        <div id="stat-money" class="font-bold text-emerald-400 text-xs sm:text-sm">3 000 000 ₽</div>
+      </div>
+    </div>
+
+    <div class="bg-stone-900 border border-stone-700 rounded-lg p-2 flex items-center gap-2">
+      <div class="w-7 h-7 rounded bg-blue-950 text-blue-400 flex items-center justify-center text-base">📈</div>
+      <div>
+        <div class="text-stone-400 text-[9px] uppercase font-semibold">Чистый Доход</div>
+        <div id="stat-income" class="font-bold text-blue-400 text-xs sm:text-sm">+0 ₽/с</div>
+      </div>
+    </div>
+
+    <div class="bg-stone-900 border border-stone-700 rounded-lg p-2 flex items-center gap-2">
+      <div class="w-7 h-7 rounded bg-amber-950 text-amber-400 flex items-center justify-center text-base">👨‍👩‍👧</div>
+      <div>
+        <div class="text-stone-400 text-[9px] uppercase font-semibold">Население</div>
+        <div id="stat-pop" class="font-bold text-amber-400 text-xs sm:text-sm">1 чел.</div>
+      </div>
+    </div>
+
+    <div class="bg-stone-900 border border-stone-700 rounded-lg p-2 flex items-center gap-2">
+      <div class="w-7 h-7 rounded bg-rose-950 text-rose-400 flex items-center justify-center text-base">🏦</div>
+      <div>
+        <div class="text-stone-400 text-[9px] uppercase font-semibold">Долг Банку</div>
+        <div id="stat-debt" class="font-bold text-rose-400 text-xs sm:text-sm">0 ₽</div>
+      </div>
+    </div>
+
+    <div class="bg-stone-900 border border-stone-700 rounded-lg p-2 flex items-center gap-2">
+      <div class="w-7 h-7 rounded bg-orange-950 text-orange-400 flex items-center justify-center text-base">💸</div>
+      <div>
+        <div class="text-stone-400 text-[9px] uppercase font-semibold">Расходы/сек</div>
+[11.11.2026 23:43] маратик: <div id="stat-upkeep" class="font-bold text-orange-400 text-xs sm:text-sm">-0 ₽</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Left Column: Interactive Village Map -->
+<section class="lg:w-3/5 flex flex-col gap-3">
+  <div class="relative bg-stone-950 border-2 border-amber-900 rounded-xl overflow-hidden shadow-2xl flex-grow flex flex-col">
+    
+    <!-- Canvas Header Overlay -->
+    <div class="absolute top-3 left-3 right-3 z-10 flex justify-between items-center pointer-events-none">
+      <div class="flex items-center gap-2 pointer-events-auto">
+        <div class="bg-stone-900/90 border border-amber-700/60 backdrop-blur rounded-lg px-2.5 py-1 text-xs text-amber-300 font-semibold shadow flex items-center gap-1.5">
+          <span>⚡ Электричество:</span>
+          <span id="power-status-badge" class="px-1.5 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-700">Нет</span>
+        </div>
+        <div class="bg-stone-900/90 border border-blue-700/60 backdrop-blur rounded-lg px-2.5 py-1 text-xs text-blue-300 font-semibold shadow flex items-center gap-1.5">
+          <span>🚰 Вода:</span>
+          <span id="water-status-badge" class="px-1.5 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-700">Нет</span>
+        </div>
+      </div>
+      <div class="bg-stone-900/90 border border-stone-700 backdrop-blur rounded-lg px-3 py-1 text-xs text-stone-300 font-semibold shadow pointer-events-auto">
+        😊 Счастье: <span id="stat-happiness" class="text-yellow-400">50%</span>
+      </div>
+    </div>
+
+    <!-- 2D Canvas Context -->
+    <div class="relative w-full h-[340px] sm:h-[420px] md:h-[480px] bg-stone-900 cursor-pointer" id="canvas-container">
+      <canvas id="villageCanvas" class="w-full h-full block"></canvas>
+      
+      <!-- Click hint overlay -->
+      <div class="absolute bottom-3 left-3 bg-stone-900/80 border border-stone-700 text-stone-300 text-xs px-3 py-1.5 rounded-lg pointer-events-none flex items-center gap-2 backdrop-blur">
+        <i class="fa-solid fa-hand-pointer text-amber-400"></i>
+        <span>Кликайте по деревне для сбора урожая (+100 ₽)</span>
+      </div>
+    </div>
+
+    <!-- Village Log Console -->
+    <div class="bg-stone-950 border-t border-amber-950 p-3 h-28 overflow-y-auto text-xs font-mono text-stone-300 space-y-1" id="event-log">
+      <div class="text-amber-500 font-semibold">[История] Заброшенная деревня приобретена за 1 рубль. Остаток средств: 3 000 000 ₽. В деревне проживает баба Марфа (80 лет).</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Right Column: Control Panels & Tabs -->
+<section class="lg:w-2/5 flex flex-col bg-stone-950 border-2 border-amber-900 rounded-xl overflow-hidden shadow-2xl">
+  
+  <!-- Navigation Tabs -->
+  <nav class="grid grid-cols-4 bg-stone-900 border-b border-amber-900 text-xs sm:text-sm font-semibold">
+    <button onclick="switchTab('build')" id="tab-build" class="tab-btn active py-3 px-1 text-center transition flex flex-col items-center gap-1">
+      <i class="fa-solid fa-hammer text-base"></i>
+      <span>Стройка</span>
+    </button>
+    <button onclick="switchTab('farm')" id="tab-farm" class="tab-btn py-3 px-1 text-center transition flex flex-col items-center gap-1">
+      <i class="fa-solid fa-wheat-awn text-base"></i>
+      <span>Бизнес</span>
+    </button>
+    <button onclick="switchTab('bank')" id="tab-bank" class="tab-btn py-3 px-1 text-center transition flex flex-col items-center gap-1">
+      <i class="fa-solid fa-building-columns text-base"></i>
+      <span>Банк</span>
+    </button>
+    <button onclick="switchTab('people')" id="tab-people" class="tab-btn py-3 px-1 text-center transition flex flex-col items-center gap-1">
+      <i class="fa-solid fa-users text-base"></i>
+      <span>Жители</span>
+    </button>
+  </nav>
+
+  <!-- Dynamic Tab Content Panels -->
+  <div class="p-4 overflow-y-auto flex-grow space-y-4 max-h-[520px]" id="tab-contents">
+    
+    <!-- Tab 1: Construction & Infrastructure -->
+    <div id="content-build" class="space-y-3">
+[11.11.2026 23:43] маратик: <div class="bg-amber-950/40 border border-amber-800/60 p-2.5 rounded-lg text-xs text-amber-200">
+        🔨 Развивайте жилье и социальные объекты. Постройте водопровод и свет для привлечения жителей!
+      </div>
+
+      <!-- Special Grand Event Action -->
+      <div class="bg-gradient-to-r from-purple-900/80 to-amber-900/80 border-2 border-amber-500/80 p-3 rounded-xl flex items-center justify-between gap-3 shadow-lg">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl p-2 bg-purple-950 rounded-lg border border-purple-500 animate-pulse">🎆</div>
+          <div>
+            <div class="font-bold text-xs sm:text-sm text-yellow-300">Праздничный Фейерверк</div>
+            <div class="text-[11px] text-stone-200">Устройте шоу! <strong>+15% к Счастью</strong> всех жителей.</div>
+          </div>
+        </div>
+        <button onclick="launchFireworks()" class="px-3 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-stone-950 font-extrabold text-xs rounded-xl shadow-md transition transform active:scale-95 whitespace-nowrap">
+          🎉 20 000 000 ₽
+        </button>
+      </div>
+      
+      <div id="build-list" class="space-y-3">
+        <!-- Dynamic Building Cards JS -->
+      </div>
+    </div>
+
+    <!-- Tab 2: Farms & Production -->
+    <div id="content-farm" class="space-y-3 hidden">
+      <div class="bg-emerald-950/40 border border-emerald-800/60 p-2.5 rounded-lg text-xs text-emerald-200">
+        🌾 Бизнес генерирует основной пассивный доход. С каждой покупкой цена предприятия увеличивается!
+      </div>
+
+      <div id="farm-list" class="space-y-3">
+        <!-- Dynamic Farms JS -->
+      </div>
+    </div>
+
+    <!-- Tab 3: Banking & Loans & Deposits -->
+    <div id="content-bank" class="space-y-4 hidden">
+      <!-- Loan Section -->
+      <div class="wood-panel rounded-xl p-4 space-y-3">
+        <h3 class="font-bold text-amber-400 text-base flex items-center gap-2">
+          <i class="fa-solid fa-landmark"></i> Сельскохозяйственный Кредит
+        </h3>
+        <p class="text-xs text-stone-300">
+          Вы можете взять займ от <strong>100 000 ₽</strong> до <strong>50 000 000 ₽</strong> (0.08% в день).
+        </p>
+        
+        <div class="space-y-2 pt-1">
+          <div class="flex justify-between text-xs">
+            <span>Сумма кредита:</span>
+            <span id="loan-amount-val" class="font-bold text-emerald-400 text-sm">1 000 000 ₽</span>
+          </div>
+          <input type="range" id="loan-slider" min="100000" max="50000000" step="100000" value="1000000" 
+                 oninput="updateLoanSliderVal(this.value)"
+                 class="w-full accent-amber-500 bg-stone-800 rounded h-2">
+        </div>
+
+        <button onclick="takeLoan()" class="w-full py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-lg text-xs transition">
+          Взять Кредит
+        </button>
+      </div>
+
+      <!-- Deposit Account Section -->
+      <div class="bg-stone-900 border border-amber-900 rounded-xl p-4 space-y-3">
+        <h3 class="font-bold text-amber-400 text-base flex items-center gap-2">
+          🏦 Банковский Депозит (Вклад)
+        </h3>
+        <p class="text-xs text-stone-300">
+          Поместите деньги на депозит под 5% доходности в день!
+        </p>
+        <div class="flex justify-between text-xs">
+          <span class="text-stone-400">На депозите:</span>
+          <span id="bank-deposit-val" class="font-bold text-emerald-400">0 ₽</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="depositMoney(500000)" class="py-2 bg-stone-800 hover:bg-stone-700 border border-stone-600 text-xs rounded font-semibold">Положить 500k ₽</button>
+          <button onclick="withdrawMoney()" class="py-2 bg-amber-800 hover:bg-amber-700 text-xs rounded font-semibold">Снять Все</button>
+        </div>
+      </div>
+
+      <!-- Existing Debt Management -->
+      <div class="bg-stone-900 border border-stone-800 rounded-xl p-4 space-y-3">
+[11.11.2026 23:43] маратик: <h4 class="font-bold text-stone-200 text-xs uppercase border-b border-stone-800 pb-2">Состояние Задолженности</h4>
+        <div class="flex justify-between text-xs">
+          <span class="text-stone-400">Текущий долг:</span>
+          <span id="bank-current-debt" class="font-bold text-rose-400">0 ₽</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="payLoan(1000000)" class="py-2 bg-stone-800 hover:bg-stone-700 border border-stone-600 rounded text-xs font-semibold">Погасить 1M ₽</button>
+          <button onclick="payLoan('full')" class="py-2 bg-amber-700 hover:bg-amber-600 text-white rounded text-xs font-semibold">Погасить Полностью</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Residents & Key Characters -->
+    <div id="content-people" class="space-y-4 hidden">
+      <div class="wood-panel rounded-xl p-4 space-y-3">
+        <h3 class="font-bold text-amber-400 text-base flex items-center gap-2">
+          👴 Ключевые жители деревни
+        </h3>
+        <p id="granny-quote" class="font-handwriting text-base text-amber-200 italic bg-amber-950/50 p-2.5 rounded-lg border border-amber-800">
+          «Ох, милок, кабы свет провести да водопровод подправить...»
+        </p>
+      </div>
+
+      <div class="bg-stone-900 border border-stone-800 rounded-xl p-4 space-y-2 text-xs">
+        <h4 class="font-bold text-amber-400 border-b border-stone-800 pb-1.5">Потребности и Счастье</h4>
+        <div class="flex justify-between">
+          <span class="text-stone-400">Обеспеченность водой и светом:</span>
+          <span id="stat-utility-satisfaction" class="font-semibold text-rose-400">0%</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-stone-400">Социальное обслуживание:</span>
+          <span id="stat-social-satisfaction" class="font-semibold text-yellow-400">Низкое</span>
+        </div>
+      </div>
+
+      <div class="bg-stone-900 border border-stone-800 rounded-xl p-4">
+        <h4 class="font-bold text-xs uppercase text-stone-400 mb-2">Жители деревни:</h4>
+        <ul id="residents-list" class="text-xs space-y-1.5 text-stone-300 max-h-40 overflow-y-auto">
+          <li class="flex items-center gap-2"><span>👵</span> <strong>Баба Марфа</strong> (80 лет) — Старейшина</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
